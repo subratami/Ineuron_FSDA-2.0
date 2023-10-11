@@ -1,0 +1,86 @@
+--1. Load the given dataset into snowflake with a primary key to Order Date column.---
+
+  	create or replace table SM_Salesdata
+		( 
+		order_ID varchar(30),
+		Order_Date date PRIMARY KEY,
+		Ship_date date,
+		ship_mode varchar(30),
+		customer_name varchar(30),
+		segment varchar(30),
+		state varchar(50),
+		Country varchar(50),
+		market  varchar(30),
+		Region varchar(30),
+		Product_ID varchar(30),
+		category varchar(30),
+		Sub_category varchar(30),
+		Product_Name varchar(200),
+		Sales number(10,0),
+		quantity number(10,0),
+		Discount number(10,2),
+		profit number(10,2),
+		Shipping_cost number(10,2),
+		order_priority char(10),
+		Year number(4) );
+
+--2. Change the Primary key to Order Id Column.----
+
+    ALTER TABLE SM_Salesdata
+		DROP PRIMARY KEY;
+		
+	  ALTER TABLE SM_Salesdata 
+          ADD primary key(order_ID);	
+
+--3. Check the data type for Order date and Ship date and mention in what data type it should be?----
+
+ --According to SALASDATA.csv order date,Ship date should be in date data type and the SNOWFLAKE SUPPORT "YYYY-MM-DD" as DEFAULT date Format.
+      So I Format Order_date and Ship_date into "YYYY-MM-DD" date Format in Excel,
+	  then I Create table SM_Salesdata with Order_Date and Ship_date using date DATA TYPE. Then upload csv on it.--
+	 
+	  create and replace table SM_Salesdata
+	      (...........,
+		  order_date date,
+		  Ship_date date,..........,....,....,...,);
+
+--4. Create a new column called order_extract and extract the number after the last ‘–‘from Order ID column.----
+
+   Alter table SM_Salesdata
+                 add column Order_Extact  VARCHAR(30);
+	 Update SM_Salesdata
+            set New_order_ID = substr(order_id,9);
+			 
+				 
+--5. Create a new column called Discount Flag and categorize it based on discount. Use ‘Yes’ if the discount is greater than zero else ‘No’.----
+
+  Alter table SM_Salesdata
+                 add column Discount_flag  CHAR(5);
+	update SM_salesdata
+    set discount_flag = case 
+                            when discount >0  then 'YES' else 'False' end ;
+
+--6. Create a new column called process days and calculate how many days it takes for each order id to process from the order to its shipment.----
+
+  alter table SM_salesdata              
+			add column Process_day number(5,0);
+
+	update SM_Salesdata
+			set Process_day = datediff(DAY,order_date, ship_date);
+
+/*7. Create a new column called Rating and then based on the Process dates give rating like given below.
+a. If process days less than or equal to 3days then rating should be 5
+b. If process days are greater than 3 and less than or equal to 6 then rating 
+should be 4
+c. If process days are greater than 6 and less than or equal to 10 then rating 
+should be 3
+d. If process days are greater than 10 then the rating should be 2 */
+
+ Alter table SM_Salesdata
+			add column Rating number(5,0);
+
+	  update SM_Salesdata
+		    set Rating = case 
+						      when Process_day <=3 then '5'
+							  when Process_day >3 and Process_day <=6 then '4'
+						      when Process_day >6 and Process_day <=10 then '3'
+						else '2' end; 
